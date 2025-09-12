@@ -139,101 +139,94 @@ def extract_data_from_audio(audio_bytes):
 # --- Streamlit UI ---
 
 def main():
-    st.set_page_config(page_title="StealthGuard Pro", page_icon="🔒", layout="centered")
+    st.set_page_config(page_title="StealthGuard Pro", page_icon="🔒", layout="wide")
 
     st.markdown("""
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
+            /* General Body Styling */
             .stApp {
-                background-color: #1a1a2e;
-                background-image: 
-                    radial-gradient(circle at 15% 50%, #1e1e3f 0%, transparent 30%),
-                    radial-gradient(circle at 85% 30%, #3d3d5c 0%, transparent 30%);
-                animation: move-background 20s ease-in-out infinite;
-                background-size: 200% 200%;
+                background-color: #1f1f1f; /* Dark background */
             }
 
-            @keyframes move-background {
-                0%   { background-position: 0% 50%; }
-                50%  { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
+            /* Main Content Area Styling (Fluent UI Card) */
+            .main .block-container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding-top: 2rem;
             }
-
-            /* Main content container */
             [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
-                background-color: rgba(23, 23, 39, 0.8);
+                background: rgba(46, 46, 46, 0.7); /* Acrylic/Mica effect */
+                backdrop-filter: blur(10px);
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 12px;
-                padding: 30px;
-                margin-top: 25px;
-                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
+                border-radius: 8px;
+                padding: 2rem;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08);
             }
-
+            
             /* Typography */
-            h1, h2, h3, p, label, .st-emotion-cache-19rxj07 {
-                font-family: 'Poppins', sans-serif;
+            h1, h2, h3, p, label {
+                font-family: 'Roboto', 'Segoe UI', sans-serif;
+                color: #f0f0f0;
             }
-            h1 { color: #e0e0e0; text-align: center; }
+            h1 { text-align: center; }
             h2, h3 { 
-                color: #c0c0c0; 
-                border-bottom: 1px solid #4a4a6a;
-                padding-bottom: 10px;
-                margin-top: 20px;
+                color: #e0e0e0;
+                font-weight: 500;
+                border-bottom: 1px solid #444;
+                padding-bottom: 8px;
             }
 
-            /* Tab styling */
+            /* Tab (Pivot) Styling */
             .stTabs [data-baseweb="tab-list"] {
-                gap: 12px;
-                justify-content: center;
-                border-bottom: none;
+                gap: 24px;
+                border-bottom: 2px solid #333;
             }
             .stTabs [data-baseweb="tab"] {
-                background-color: #2e2e4f;
-                border-radius: 8px;
-                padding: 10px 20px;
-                transition: all 0.2s ease-in-out;
-                border: none;
-                color: #a0a0c0;
+                padding: 10px 0;
+                background: none;
+                border-bottom: 2px solid transparent;
+                color: #aaa;
+                transition: color 0.2s, border-color 0.2s;
             }
             .stTabs [data-baseweb="tab"]:hover {
-                background-color: #3d3d5c;
-                color: #ffffff;
+                color: #fff;
             }
             .stTabs [aria-selected="true"] {
-                background-color: #4a47a3;
-                color: #ffffff;
-                font-weight: 600;
+                color: #0078d4; /* Fluent UI Blue */
+                font-weight: 500;
+                border-bottom: 2px solid #0078d4;
             }
 
-            /* Button styling */
+            /* Button Styling */
             .stButton > button {
-                font-family: 'Poppins', sans-serif;
-                font-weight: 600;
-                border-radius: 8px;
-                border: none;
-                background: linear-gradient(90deg, #4a47a3 0%, #2e2e4f 100%);
+                font-family: 'Roboto', 'Segoe UI', sans-serif;
+                font-weight: 500;
+                border-radius: 4px;
+                border: 1px solid #0078d4;
+                background-color: #0078d4;
                 color: #ffffff;
-                transition: all 0.3s ease-in-out;
-                padding: 12px 24px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                transition: all 0.2s ease-in-out;
+                padding: 10px 20px;
             }
             .stButton > button:hover {
-                box-shadow: 0 6px 20px rgba(74, 71, 163, 0.4);
-                transform: translateY(-2px);
-                background: linear-gradient(90deg, #5c59c7 0%, #3d3d5c 100%);
+                background-color: #106ebe;
+                border-color: #106ebe;
+            }
+            .stButton > button:active {
+                background-color: #005a9e;
+                border-color: #005a9e;
             }
         </style>""", unsafe_allow_html=True)
     
     st.title("StealthGuard Pro")
-    st.markdown("<p style='text-align: center; color: #a0a0c0;'>Securely hide data within your files.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #a0a0a0;'>A Fluent-inspired Steganography Tool</p>", unsafe_allow_html=True)
 
-    encode_tab, decode_tab = st.tabs(["Encode", "Decode"])
+    encode_tab, decode_tab = st.tabs(["Encode File", "Decode File"])
 
     with encode_tab:
-        st.header("1. Prepare Your Secret")
+        st.header("1. Select Secret Data")
         secret_type = st.radio("What is your secret?", ["Text", "Image"], horizontal=True)
 
         secret_bytes = None
@@ -248,7 +241,7 @@ def main():
                 header = f"IMG:{file_ext}:".encode('utf-8')
                 secret_bytes = header + secret_image_file.getvalue()
 
-        st.header("2. Choose a Carrier File")
+        st.header("2. Select Carrier Medium")
         carrier_type = st.radio("Where will you hide it?", ["Image", "Audio (.wav)"], horizontal=True)
 
         carrier_file = st.file_uploader(f"Carrier {carrier_type}:", type=['png', 'jpg', 'jpeg', 'bmp'] if carrier_type == "Image" else ['wav'])
@@ -292,7 +285,7 @@ def main():
                 st.warning("Please provide both a secret and a carrier file.")
 
     with decode_tab:
-        st.header("1. Upload a Carrier File")
+        st.header("1. Upload Carrier File")
         carrier_type_decode = st.radio("What kind of file are you decoding?", ["Image", "Audio (.wav)"], horizontal=True, key="decode_carrier_type")
         carrier_file_decode = st.file_uploader(f"Encoded {carrier_type_decode}:", type=['png'] if carrier_type_decode == "Image" else ['wav'], key="decode_uploader")
 
