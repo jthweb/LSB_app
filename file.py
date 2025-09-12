@@ -63,7 +63,7 @@ def hide_data_in_image(image, data):
     data_len = len(binary_data)
     
     if data_len > image.width * image.height * 3:
-        raise ValueError("Secret is too large for this image.")
+        raise ValueError("Secret data is too large for this image.")
 
     img_data = list(image.getdata())
     new_img_data = []
@@ -111,7 +111,7 @@ def hide_data_in_audio(audio_bytes, data):
         frames = bytearray(wav_in.readframes(wav_in.getnframes()))
 
         if data_len > len(frames):
-            raise ValueError("Secret is too large for this audio file.")
+            raise ValueError("Secret data is too large for this audio file.")
 
         for i in range(data_len):
             frames[i] = frames[i] & 0b11111110 | int(binary_data[i])
@@ -139,111 +139,132 @@ def extract_data_from_audio(audio_bytes):
 # --- Streamlit UI ---
 
 def main():
-    st.set_page_config(page_title="StealthGuard Pro", page_icon=" Moin", layout="centered")
+    st.set_page_config(page_title="StealthGuard Pro", page_icon="🔒", layout="centered")
 
-    # The new, "sicker" UI is defined here with CSS
     st.markdown("""
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
             .stApp {
-                background: #0f0c29;
-                background: -webkit-linear-gradient(to right, #24243e, #302b63, #0f0c29);
-                background: linear-gradient(to right, #24243e, #302b63, #0f0c29);
-                animation: gradient 15s ease infinite;
-                background-size: 400% 400%;
+                background-color: #1a1a2e;
+                background-image: 
+                    radial-gradient(circle at 15% 50%, #1e1e3f 0%, transparent 30%),
+                    radial-gradient(circle at 85% 30%, #3d3d5c 0%, transparent 30%);
+                animation: move-background 20s ease-in-out infinite;
+                background-size: 200% 200%;
             }
 
-            @keyframes gradient {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
+            @keyframes move-background {
+                0%   { background-position: 0% 50%; }
+                50%  { background-position: 100% 50%; }
                 100% { background-position: 0% 50%; }
             }
 
-            h1, h2, h3 {
-                font-family: 'Orbitron', sans-serif;
-                color: #00cyan;
-                text-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff, 0 0 30px #00c6ff;
-            }
-            
-            /* Glassmorphism Container */
+            /* Main content container */
             [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
-                background: rgba(40, 40, 60, 0.6);
-                backdrop-filter: blur(10px);
+                background-color: rgba(23, 23, 39, 0.8);
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 10px;
-                padding: 25px;
+                border-radius: 12px;
+                padding: 30px;
+                margin-top: 25px;
+                box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+
+            /* Typography */
+            h1, h2, h3, p, label, .st-emotion-cache-19rxj07 {
+                font-family: 'Poppins', sans-serif;
+            }
+            h1 { color: #e0e0e0; text-align: center; }
+            h2, h3 { 
+                color: #c0c0c0; 
+                border-bottom: 1px solid #4a4a6a;
+                padding-bottom: 10px;
                 margin-top: 20px;
             }
 
-            .stTabs [data-baseweb="tab-list"] { 
-                gap: 24px; 
+            /* Tab styling */
+            .stTabs [data-baseweb="tab-list"] {
+                gap: 12px;
+                justify-content: center;
+                border-bottom: none;
             }
             .stTabs [data-baseweb="tab"] {
-                background-color: transparent;
-                border-radius: 4px;
-                padding: 10px 15px;
-                transition: background-color 0.3s ease;
-                border-bottom: 2px solid transparent;
-            }
-            .stTabs [aria-selected="true"] { 
-                border-bottom: 2px solid #00c6ff;
-                color: #00c6ff;
-            }
-            
-            .stButton > button {
+                background-color: #2e2e4f;
                 border-radius: 8px;
-                border: 1px solid #00c6ff;
-                background-color: rgba(0, 198, 255, 0.1);
-                color: #00c6ff;
+                padding: 10px 20px;
+                transition: all 0.2s ease-in-out;
+                border: none;
+                color: #a0a0c0;
+            }
+            .stTabs [data-baseweb="tab"]:hover {
+                background-color: #3d3d5c;
+                color: #ffffff;
+            }
+            .stTabs [aria-selected="true"] {
+                background-color: #4a47a3;
+                color: #ffffff;
+                font-weight: 600;
+            }
+
+            /* Button styling */
+            .stButton > button {
+                font-family: 'Poppins', sans-serif;
+                font-weight: 600;
+                border-radius: 8px;
+                border: none;
+                background: linear-gradient(90deg, #4a47a3 0%, #2e2e4f 100%);
+                color: #ffffff;
                 transition: all 0.3s ease-in-out;
-                box-shadow: 0 0 5px #00c6ff;
+                padding: 12px 24px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             }
             .stButton > button:hover {
-                box-shadow: 0 0 15px #00c6ff, 0 0 25px #00c6ff;
-                transform: scale(1.05);
-                background-color: rgba(0, 198, 255, 0.2);
+                box-shadow: 0 6px 20px rgba(74, 71, 163, 0.4);
+                transform: translateY(-2px);
+                background: linear-gradient(90deg, #5c59c7 0%, #3d3d5c 100%);
             }
         </style>""", unsafe_allow_html=True)
     
-    st.title("🛡️ STEALTHGUARD PRO")
-    st.markdown("---")
+    st.title("StealthGuard Pro")
+    st.markdown("<p style='text-align: center; color: #a0a0c0;'>Securely hide data within your files.</p>", unsafe_allow_html=True)
 
-    encode_tab, decode_tab = st.tabs(["[ CLOAK DATA ]", "[ REVEAL DATA ]"])
+    encode_tab, decode_tab = st.tabs(["Encode", "Decode"])
 
     with encode_tab:
-        st.header("📦 1. Load Your Payload")
-        secret_type = st.radio("What is the nature of your secret?", ["Text", "Image"], horizontal=True)
+        st.header("1. Prepare Your Secret")
+        secret_type = st.radio("What is your secret?", ["Text", "Image"], horizontal=True)
 
         secret_bytes = None
         if secret_type == "Text":
-            message = st.text_area("Input secret message:", placeholder="The owl watches at dawn...")
+            message = st.text_area("Secret message:", placeholder="Enter your text here...")
             if message:
                 secret_bytes = b"TXT:" + message.encode('utf-8')
         elif secret_type == "Image":
-            secret_image_file = st.file_uploader("Upload secret image:", type=['png', 'jpg', 'jpeg'])
+            secret_image_file = st.file_uploader("Secret image:", type=['png', 'jpg', 'jpeg'])
             if secret_image_file:
                 file_ext = secret_image_file.name.split('.')[-1].upper()
                 header = f"IMG:{file_ext}:".encode('utf-8')
                 secret_bytes = header + secret_image_file.getvalue()
 
-        st.header("🚢 2. Select Your Vessel")
-        carrier_type = st.radio("Choose the medium to carry your payload:", ["Image", "Audio (.wav)"], horizontal=True)
+        st.header("2. Choose a Carrier File")
+        carrier_type = st.radio("Where will you hide it?", ["Image", "Audio (.wav)"], horizontal=True)
 
-        carrier_file = st.file_uploader(f"Upload carrier {carrier_type}:", type=['png', 'jpg', 'jpeg', 'bmp'] if carrier_type == "Image" else ['wav'])
+        carrier_file = st.file_uploader(f"Carrier {carrier_type}:", type=['png', 'jpg', 'jpeg', 'bmp'] if carrier_type == "Image" else ['wav'])
         
-        if st.button("Initiate Encoding Sequence", use_container_width=True):
+        if st.button("Encode Data", use_container_width=True):
             secret_key = os.environ.get('ENCRYPTION_KEY')
             if not secret_key:
-                st.error("FATAL ERROR: ENCRYPTION_KEY not configured on server.")
+                st.error("ERROR: ENCRYPTION_KEY not configured on server.")
             elif secret_bytes and carrier_file:
                 try:
-                    with st.status("Engaging Stealth Protocol...", expanded=True) as status:
-                        status.write("🔐 Encrypting payload with AES-256...")
+                    with st.status("Encoding in progress...", expanded=True) as status:
+                        status.write("Encrypting data with AES-256...")
                         encrypted_data = encrypt_data(secret_bytes, secret_key)
-                        time.sleep(1.5)
+                        time.sleep(1)
 
-                        status.write(f"🧬 Weaving encrypted data into vessel's structure...")
+                        status.write(f"Embedding data into carrier file...")
                         output_bytes, fname, mime = (None, "encoded_output", "application/octet-stream")
 
                         if carrier_type == "Image":
@@ -257,32 +278,32 @@ def main():
                             output_bytes = hide_data_in_audio(carrier_file.getvalue(), encrypted_data)
                             fname, mime = "encoded_audio.wav", "audio/wav"
                         
-                        time.sleep(1.5)
-                        status.update(label="✅ Encoding Complete. Vessel is ready.", state="complete")
+                        time.sleep(1)
+                        status.update(label="Encoding Complete!", state="complete")
                     
                     st.success("Encoding successful!")
-                    st.download_button("Download Secure Vessel", output_bytes, fname, mime, use_container_width=True)
+                    st.download_button("Download Encoded File", output_bytes, fname, mime, use_container_width=True)
 
                 except ValueError as e:
-                    st.error(f"⚠️ Process Halted: {e}")
+                    st.error(f"Process Halted: {e}")
                 except Exception as e:
-                    st.error(f"💥 System Malfunction: {e}")
+                    st.error(f"An unexpected error occurred: {e}")
             else:
-                st.warning("Awaiting input: Payload and Vessel required to proceed.")
+                st.warning("Please provide both a secret and a carrier file.")
 
     with decode_tab:
-        st.header("📂 1. Upload Secure Vessel")
-        carrier_type_decode = st.radio("Specify vessel type:", ["Image", "Audio (.wav)"], horizontal=True, key="decode_carrier_type")
-        carrier_file_decode = st.file_uploader(f"Upload encoded {carrier_type_decode}:", type=['png'] if carrier_type_decode == "Image" else ['wav'], key="decode_uploader")
+        st.header("1. Upload a Carrier File")
+        carrier_type_decode = st.radio("What kind of file are you decoding?", ["Image", "Audio (.wav)"], horizontal=True, key="decode_carrier_type")
+        carrier_file_decode = st.file_uploader(f"Encoded {carrier_type_decode}:", type=['png'] if carrier_type_decode == "Image" else ['wav'], key="decode_uploader")
 
-        st.header("🔑 2. Provide Decryption Key")
-        decryption_key = st.text_input("Enter the master key to unlock the payload:", type="password")
+        st.header("2. Enter Secret Key")
+        decryption_key = st.text_input("Secret key:", type="password")
 
-        if st.button("Initiate Decoding Sequence", use_container_width=True):
+        if st.button("Decode Data", use_container_width=True):
             if carrier_file_decode and decryption_key:
                 try:
-                    with st.status("Analyzing vessel integrity...", expanded=True) as status:
-                        status.write(f"🔬 Scanning for hidden data signatures...")
+                    with st.status("Decoding in progress...", expanded=True) as status:
+                        status.write(f"Extracting hidden data from file...")
                         extracted_data = None
                         if carrier_type_decode == "Image":
                             img = Image.open(carrier_file_decode)
@@ -290,36 +311,36 @@ def main():
                         elif carrier_type_decode == "Audio (.wav)":
                             extracted_data = extract_data_from_audio(carrier_file_decode.getvalue())
                         
-                        time.sleep(1.5)
+                        time.sleep(1)
                         if not extracted_data:
-                            raise ValueError("Scan negative. No data signature found.")
+                            raise ValueError("No hidden data found or file is corrupt.")
 
-                        status.write("🔑 Key accepted. Attempting payload decryption...")
+                        status.write("Decrypting data with provided key...")
                         decrypted_bytes = decrypt_data(extracted_data, decryption_key)
-                        time.sleep(1.5)
+                        time.sleep(1)
                         if not decrypted_bytes:
                             raise ValueError("Decryption failed. Key is incorrect or data is corrupt.")
 
-                        status.update(label="✅ Payload Extracted Successfully.", state="complete")
+                        status.update(label="Decoding Complete!", state="complete")
 
-                    st.success("Mission Accomplished!")
+                    st.success("Successfully decoded!")
                     
                     if decrypted_bytes.startswith(b"TXT:"):
-                        st.subheader("--- DECODED TRANSMISSION ---")
+                        st.subheader("Decoded Text")
                         st.text_area("Message:", decrypted_bytes[4:].decode('utf-8'), height=150)
                     elif decrypted_bytes.startswith(b"IMG:"):
-                        st.subheader("--- RECOVERED ASSET ---")
+                        st.subheader("Decoded Image")
                         parts = decrypted_bytes.split(b':', 2)
                         img_ext = parts[1].decode('utf-8').lower()
                         img_bytes = parts[2]
-                        st.image(img_bytes, caption=f"Recovered Image (. {img_ext})")
+                        st.image(img_bytes, caption=f"Decoded Image (. {img_ext})")
 
                 except ValueError as e:
-                    st.error(f"⚠️ Mission Failed: {e}")
+                    st.error(f"Process Failed: {e}")
                 except Exception as e:
-                    st.error(f"💥 Critical Error: {e}")
+                    st.error(f"A critical error occurred: {e}")
             else:
-                st.warning("Awaiting input: Vessel and Key required to proceed.")
+                st.warning("Please provide both the file and the secret key.")
 
 if __name__ == '__main__':
     main()
