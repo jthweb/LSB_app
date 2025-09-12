@@ -149,7 +149,6 @@ def main():
             ::selection {
                 background: #00aaff; /* Electric Blue */
                 color: #0a0a1a;
-                border-radius: 5px; /* This might not be supported in all browsers */
             }
 
             /* --- Body and Animated Background --- */
@@ -228,6 +227,53 @@ def main():
                 box-shadow: 0 6px 20px rgba(0, 170, 255, 0.4);
                 transform: translateY(-2px);
                 filter: brightness(1.1);
+            }
+
+            /* --- Custom Input Fields --- */
+            .stTextInput input, .stTextArea textarea {
+                background-color: #1a1a2e;
+                border: 1px solid #2a2a4a;
+                border-radius: 8px;
+                color: #f0f0f0;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .stTextInput input:focus, .stTextArea textarea:focus {
+                border-color: #00aaff;
+                box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+            }
+            
+            /* --- Custom Radio Buttons --- */
+            div[role="radiogroup"] {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-start;
+            }
+            .stRadio > div {
+                background: #1a1a2e;
+                border-radius: 8px;
+                color: #b0b0d0;
+                transition: all 0.2s ease-in-out;
+                border: 1px solid #2a2a4a;
+                padding: 8px 16px;
+                cursor: pointer;
+            }
+            .stRadio > div:hover {
+                 background: #2a2a4a;
+                 color: #ffffff;
+            }
+            
+            /* --- Custom File Uploader --- */
+            [data-testid="stFileUploader"] {
+                background-color: #1a1a2e;
+                border: 1px dashed #2a2a4a;
+                border-radius: 8px;
+                padding: 1rem;
+            }
+            [data-testid="stFileUploader"] label {
+                color: #b0b0d0;
+            }
+            [data-testid="stFileUploader"] label:hover {
+                color: #ffffff;
             }
         </style>""", unsafe_allow_html=True)
     
