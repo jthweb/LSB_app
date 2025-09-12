@@ -168,7 +168,8 @@ def main():
             /* --- Main Content Card --- */
             .main .block-container {
                 max-width: 850px;
-                padding-top: 2rem;
+                padding: 4rem 2rem;
+                margin: 0 auto;
             }
             [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
                 background: rgba(15, 15, 35, 0.7);
