@@ -1,0 +1,57 @@
+The Core Concept: The Image is the Key
+
+The most innovative part of this application is that it's keyless. You don't need a password because the encryption key is mathematically derived from the unique pixel data of the image you upload. This makes the entire process self-contained.
+
+Part 1: The Encoding Process
+
+When you upload an image and type a message to hide, the following steps occur:
+
+Step 1: Deriving the Master Key (derive_key_from_image)
+
+The app first needs a secret key to encrypt your message. Instead of asking for one, it creates one from the image itself.
+
+    It samples a set of pixels (PIXEL_SAMPLE_SIZE = 256) from the beginning and end of your image.
+
+    For each sampled pixel, it looks at the Red, Green, and Blue values. Crucially, it ignores the last bit of each color value. This is the secret sauce! It does this because the last bit (the Least Significant Bit or LSB) is where it's going to hide the data later. By ignoring it, the app ensures it can re-create the exact same key from the final encoded image later on.
+
+    It feeds these modified pixel values into a SHA-256 hash function. A hash function creates a unique, fixed-size fingerprint (in this case, 32 bytes) from any input data. This fingerprint becomes the Master Key.
+
+Step 2: Encrypting the Message (encrypt_message)
+
+Now that it has a Master Key, it performs a robust, multi-stage encryption of your text message.
+
+    Generate a Random Salt: The app creates a new, random 16-byte value called a "salt". The purpose of the salt is to ensure that even if you encrypt the exact same message in the exact same image twice, the final encrypted data will be completely different each time. This is a critical security feature.
+
+    Create the Final Key: It takes the Master Key (from the image) and the new random salt and runs them through a function called PBKDF2 for 100,000 iterations. This is a key-stretching algorithm that makes the final key incredibly resistant to brute-force attacks.
+
+    AES Encryption: The app uses the highly secure AES-256 algorithm to encrypt your message using the Final Key. This process also generates another random value called an Initialization Vector (IV) to further randomize the encryption.
+
+    Package the Data: The final encrypted payload is a single block of bytes containing three parts, assembled in order: [Salt] + [IV] + [Encrypted Message].
+
+Step 3: Hiding the Data in the Image (hide_data_in_image)
+
+This is the steganography part.
+
+    The encrypted data package is converted into a long string of 1s and 0s (binary).
+
+    The app goes through the pixels of the original image one by one, and for each color channel (R, G, B), it replaces the Least Significant Bit (LSB) with the next bit from the binary data string.
+
+    This change is so minuscule that it's completely invisible to the human eye.
+
+    After all the data is embedded, it adds a special delimiter (__EOF__) so the decoding process knows when to stop reading. The result is a new image that looks identical to the original but secretly contains your encrypted message.
+
+Part 2: The Decoding Process
+
+When you upload an encoded image to the "Decode" tab, the app simply reverses the entire process.
+
+    Extract the Hidden Data (extract_data_from_image): The app reads the LSB of every color value in every pixel and converts the bits back into bytes. It stops when it finds the __EOF__ delimiter. This gives it the raw encrypted data package ([Salt] + [IV] + [Encrypted Message]).
+
+    Re-Create the Key (decrypt_message): This is where the magic happens.
+
+        It runs the derive_key_from_image function on the encoded image. Since this function ignores the LSBs (which were modified), it generates the exact same Master Key as it did during encoding.
+
+        It extracts the Salt and IV from the beginning of the data package it just retrieved.
+
+        It uses the same PBKDF2 function with the re-created Master Key and the extracted Salt to perfectly reconstruct the exact same Final Key.
+
+    Decrypt the Message: With the identical Final Key and IV, the app can now run the AES decryption algorithm on the encrypted message data, instantly revealing your original secret text.
